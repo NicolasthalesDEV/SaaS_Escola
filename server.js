@@ -107,12 +107,255 @@ function crudRoutes(table, fields){
   }catch(e){ res.status(400).json({error:e.message}); } });
   app.delete(`${base}/:id`, authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM ${table} WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
 }
+
+// Rotas básicas sem validações especiais
 crudRoutes('schools', ['name']);
-crudRoutes('branches', ['school_id','name','address']);
-crudRoutes('teachers', ['school_id','branch_id','name','email']);
-crudRoutes('students', ['school_id','branch_id','name','email']);
-crudRoutes('classes', ['school_id','branch_id','name','teacher_id']);
-crudRoutes('schedules', ['class_id','weekday','start_time','end_time']);
+
+// Rotas com validações específicas
+
+// Filiais - validar se a escola existe
+app.get('/api/branches', authMiddleware, async (req,res)=>{ try{ res.json(await all(`SELECT * FROM branches ORDER BY id DESC`)); }catch(e){ res.status(500).json({error:e.message}); } });
+app.post('/api/branches', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, name, address} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    const result = await run(`INSERT INTO branches(school_id,name,address) VALUES(?,?,?)`, [school_id, name, address]);
+    res.json(await get(`SELECT * FROM branches WHERE id=?`, [result.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.put('/api/branches/:id', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, name, address} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    await run(`UPDATE branches SET school_id=?,name=?,address=? WHERE id=?`, [school_id, name, address, req.params.id]);
+    res.json(await get(`SELECT * FROM branches WHERE id=?`, [req.params.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.delete('/api/branches/:id', authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM branches WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
+
+// Professores - validar escola e filial
+app.get('/api/teachers', authMiddleware, async (req,res)=>{ try{ res.json(await all(`SELECT * FROM teachers ORDER BY id DESC`)); }catch(e){ res.status(500).json({error:e.message}); } });
+app.post('/api/teachers', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, email} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    const result = await run(`INSERT INTO teachers(school_id,branch_id,name,email) VALUES(?,?,?,?)`, [school_id, branch_id, name, email]);
+    res.json(await get(`SELECT * FROM teachers WHERE id=?`, [result.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.put('/api/teachers/:id', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, email} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    await run(`UPDATE teachers SET school_id=?,branch_id=?,name=?,email=? WHERE id=?`, [school_id, branch_id, name, email, req.params.id]);
+    res.json(await get(`SELECT * FROM teachers WHERE id=?`, [req.params.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.delete('/api/teachers/:id', authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM teachers WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
+
+// Alunos - validar escola e filial
+app.get('/api/students', authMiddleware, async (req,res)=>{ try{ res.json(await all(`SELECT * FROM students ORDER BY id DESC`)); }catch(e){ res.status(500).json({error:e.message}); } });
+app.post('/api/students', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, email} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    const result = await run(`INSERT INTO students(school_id,branch_id,name,email) VALUES(?,?,?,?)`, [school_id, branch_id, name, email]);
+    res.json(await get(`SELECT * FROM students WHERE id=?`, [result.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.put('/api/students/:id', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, email} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    await run(`UPDATE students SET school_id=?,branch_id=?,name=?,email=? WHERE id=?`, [school_id, branch_id, name, email, req.params.id]);
+    res.json(await get(`SELECT * FROM students WHERE id=?`, [req.params.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.delete('/api/students/:id', authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM students WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
+
+// Turmas - validar escola, filial e professor (VALIDAÇÃO PRINCIPAL SOLICITADA)
+app.get('/api/classes', authMiddleware, async (req,res)=>{ try{ res.json(await all(`SELECT * FROM classes ORDER BY id DESC`)); }catch(e){ res.status(500).json({error:e.message}); } });
+app.post('/api/classes', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, teacher_id} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    // VALIDAÇÃO PRINCIPAL: Validar se o professor existe (se especificado)
+    if (teacher_id) {
+      const teacher = await get('SELECT id, name FROM teachers WHERE id = ?', [teacher_id]);
+      if (!teacher) {
+        return res.status(400).json({error: 'Professor especificado não existe. Por favor, crie primeiro o professor na secção "Professores" antes de o atribuir a uma turma.'});
+      }
+    }
+    
+    const result = await run(`INSERT INTO classes(school_id,branch_id,name,teacher_id) VALUES(?,?,?,?)`, [school_id, branch_id, name, teacher_id]);
+    res.json(await get(`SELECT * FROM classes WHERE id=?`, [result.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.put('/api/classes/:id', authMiddleware, async (req,res)=>{ 
+  try{
+    const {school_id, branch_id, name, teacher_id} = req.body;
+    
+    // Validar se a escola existe
+    if (school_id) {
+      const school = await get('SELECT id FROM schools WHERE id = ?', [school_id]);
+      if (!school) {
+        return res.status(400).json({error: 'Escola especificada não existe. Por favor, seleccione uma escola válida.'});
+      }
+    }
+    
+    // Validar se a filial existe (se especificada)
+    if (branch_id) {
+      const branch = await get('SELECT id FROM branches WHERE id = ?', [branch_id]);
+      if (!branch) {
+        return res.status(400).json({error: 'Filial especificada não existe. Por favor, seleccione uma filial válida.'});
+      }
+    }
+    
+    // VALIDAÇÃO PRINCIPAL: Validar se o professor existe (se especificado)
+    if (teacher_id) {
+      const teacher = await get('SELECT id, name FROM teachers WHERE id = ?', [teacher_id]);
+      if (!teacher) {
+        return res.status(400).json({error: 'Professor especificado não existe. Por favor, crie primeiro o professor na secção "Professores" antes de o atribuir a uma turma.'});
+      }
+    }
+    
+    await run(`UPDATE classes SET school_id=?,branch_id=?,name=?,teacher_id=? WHERE id=?`, [school_id, branch_id, name, teacher_id, req.params.id]);
+    res.json(await get(`SELECT * FROM classes WHERE id=?`, [req.params.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.delete('/api/classes/:id', authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM classes WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
+
+// Horários - validar se a turma existe
+app.get('/api/schedules', authMiddleware, async (req,res)=>{ try{ res.json(await all(`SELECT * FROM schedules ORDER BY id DESC`)); }catch(e){ res.status(500).json({error:e.message}); } });
+app.post('/api/schedules', authMiddleware, async (req,res)=>{ 
+  try{
+    const {class_id, weekday, start_time, end_time} = req.body;
+    
+    // Validar se a turma existe
+    if (class_id) {
+      const classExists = await get('SELECT id FROM classes WHERE id = ?', [class_id]);
+      if (!classExists) {
+        return res.status(400).json({error: 'Turma especificada não existe. Por favor, seleccione uma turma válida.'});
+      }
+    }
+    
+    const result = await run(`INSERT INTO schedules(class_id,weekday,start_time,end_time) VALUES(?,?,?,?)`, [class_id, weekday, start_time, end_time]);
+    res.json(await get(`SELECT * FROM schedules WHERE id=?`, [result.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.put('/api/schedules/:id', authMiddleware, async (req,res)=>{ 
+  try{
+    const {class_id, weekday, start_time, end_time} = req.body;
+    
+    // Validar se a turma existe
+    if (class_id) {
+      const classExists = await get('SELECT id FROM classes WHERE id = ?', [class_id]);
+      if (!classExists) {
+        return res.status(400).json({error: 'Turma especificada não existe. Por favor, seleccione uma turma válida.'});
+      }
+    }
+    
+    await run(`UPDATE schedules SET class_id=?,weekday=?,start_time=?,end_time=? WHERE id=?`, [class_id, weekday, start_time, end_time, req.params.id]);
+    res.json(await get(`SELECT * FROM schedules WHERE id=?`, [req.params.id]));
+  }catch(e){ res.status(400).json({error:e.message}); }
+});
+app.delete('/api/schedules/:id', authMiddleware, async (req,res)=>{ try{ await run(`DELETE FROM schedules WHERE id=?`, [req.params.id]); res.json({ok:true}); }catch(e){ res.status(400).json({error:e.message}); } });
 
 app.get('/', (_,res)=> res.sendFile(path.join(__dirname,'public','index.html')));
 
