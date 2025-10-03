@@ -14,7 +14,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const db = new sqlite3.Database(path.join(__dirname, 'data.db'));
+// Configuração da base de dados - usa memória na Vercel para demonstração
+const isVercel = process.env.VERCEL === '1';
+const dbPath = isVercel ? ':memory:' : path.join(__dirname, 'data.db');
+const db = new sqlite3.Database(dbPath);
+
+console.log(`📊 Base de dados: ${isVercel ? 'Em memória (Vercel)' : 'SQLite local'}`);
+
 db.serialize(()=>{
   db.run(`CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY AUTOINCREMENT,email TEXT UNIQUE,password_hash TEXT,role TEXT DEFAULT 'admin')`);
   db.run(`CREATE TABLE IF NOT EXISTS schools(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)`);
@@ -23,6 +29,24 @@ db.serialize(()=>{
   db.run(`CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY AUTOINCREMENT,school_id INTEGER NOT NULL,branch_id INTEGER,name TEXT NOT NULL,email TEXT,FOREIGN KEY(school_id) REFERENCES schools(id) ON DELETE CASCADE,FOREIGN KEY(branch_id) REFERENCES branches(id) ON DELETE SET NULL)`);
   db.run(`CREATE TABLE IF NOT EXISTS classes(id INTEGER PRIMARY KEY AUTOINCREMENT,school_id INTEGER NOT NULL,branch_id INTEGER,name TEXT NOT NULL,teacher_id INTEGER,FOREIGN KEY(school_id) REFERENCES schools(id) ON DELETE CASCADE,FOREIGN KEY(branch_id) REFERENCES branches(id) ON DELETE SET NULL,FOREIGN KEY(teacher_id) REFERENCES teachers(id) ON DELETE SET NULL)`);
   db.run(`CREATE TABLE IF NOT EXISTS schedules(id INTEGER PRIMARY KEY AUTOINCREMENT,class_id INTEGER NOT NULL,weekday INTEGER NOT NULL,start_time TEXT NOT NULL,end_time TEXT NOT NULL,FOREIGN KEY(class_id) REFERENCES classes(id) ON DELETE CASCADE)`);
+  
+  // Se for Vercel (memória), criar dados de exemplo
+  if (isVercel) {
+    console.log('🌐 Criando dados de exemplo para demonstração na Vercel...');
+    
+    // Criar utilizador admin padrão
+    const bcrypt = require('bcryptjs');
+    const hash = bcrypt.hashSync('admin123', 10);
+    db.run('INSERT OR IGNORE INTO users(email,password_hash,role) VALUES(?,?,?)', ['admin@demo.com', hash, 'admin']);
+    
+    // Criar escola de exemplo
+    db.run('INSERT OR IGNORE INTO schools(name) VALUES(?)', ['Escola Secundária de Exemplo']);
+    
+    // Criar filial de exemplo  
+    db.run('INSERT OR IGNORE INTO branches(school_id,name,address) VALUES(?,?,?)', [1, 'Sede Principal', 'Rua da Educação, 123']);
+    
+    console.log('✅ Dados de exemplo criados!');
+  }
 });
 
 function authMiddleware(req,res,next){

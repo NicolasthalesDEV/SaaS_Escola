@@ -287,7 +287,24 @@ npm i -g vercel
 vercel
 ```
 
+**⚠️ Erro Comum Resolvido:**
+- ❌ `"The functions property cannot be used in conjunction with the builds property"`
+- ✅ **Solução**: Removida propriedade `functions` do `vercel.json`
+- ✅ **Estado**: Deploy funciona perfeitamente
+
 **Configuração necessária:**
+- ✅ `vercel.json` configurado e testado
+- ✅ Servidor compatível com Vercel
+- ✅ Base de dados em memória (demonstração)
+- ✅ Dados de exemplo criados automaticamente
+
+**Variáveis de ambiente na Vercel:**
+```bash
+JWT_SECRET=sua_chave_super_secreta
+NODE_ENV=production
+```
+
+📋 **Guia completo**: Consulte `DEPLOY_VERCEL.md` para instruções detalhadas.
 - Adicione `JWT_SECRET` nas variáveis de ambiente
 - Configure domínio personalizado (opcional)
 
