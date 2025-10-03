@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EduGest — Painel Administrativo</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body class="dashboard-body">
+    <div class="topbar">
+        <div class="logo">
+            EduGest
+        </div>
+        <div class="user-menu">
+            <div class="user-avatar">A</div>
+            <button onclick="logout()" class="secondary">Sair</button>
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <button class="tablink active" onclick="openTab('schools')">
+            Escolas
+        </button>
+        <button class="tablink" onclick="openTab('branches')">
+            Filiais
+        </button>
+        <button class="tablink" onclick="openTab('teachers')">
+            Professores
+        </button>
+        <button class="tablink" onclick="openTab('students')">
+            Alunos
+        </button>
+        <button class="tablink" onclick="openTab('classes')">
+            Turmas
+        </button>
+        <button class="tablink" onclick="openTab('schedules')">
+            Horários
+        </button>
+    </div>
+    
+    <div id="content" class="fade-in"></div>
+    
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

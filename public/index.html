@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EduGest — Sistema de Gestão Escolar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body class="login-background">
+    <div class="container">
+        <div class="login-header">
+            <h1>EduGest</h1>
+            <p class="subtitle">Sistema Inteligente de Gestão Escolar</p>
+        </div>
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="o.seu@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Palavra-passe</label>
+                <input id="password" type="password" placeholder="Digite a sua palavra-passe">
+            </div>
+            
+            <div class="button-group">
+                <button id="btn-login" class="primary">
+                    <span>Entrar</span>
+                </button>
+                <button id="btn-seed" class="secondary">
+                    <span>Configurar Sistema</span>
+                </button>
+            </div>
+            
+            <div id="msg" class="message hidden"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem; color: rgba(255,255,255,0.7); font-size: 0.875rem;">
+            <p><strong>Primeira vez?</strong> Clique em "Configurar Sistema" para criar o utilizador administrador inicial.</p>
+            <p><strong>Credenciais padrão:</strong> admin@demo.com / admin123</p>
+        </div>
+    </div>
+    
+    <script src="/js/login.js"></script>
+</body>
+</html>

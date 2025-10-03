@@ -1,0 +1,24 @@
+# Configurações específicas para deploy
+# Este arquivo é automaticamente utilizado pela Vercel
+
+# Cache headers para arquivos estáticos
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# Redirects
+[[redirects]]
+  from = "/admin"
+  to = "/dashboard.html"
+  status = 301
+
+[[redirects]]
+  from = "/painel"
+  to = "/dashboard.html"
+  status = 301

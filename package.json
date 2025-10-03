@@ -1,0 +1,23 @@
+{
+  "name": "saas-gestao-escolar-poc",
+  "version": "1.0.0",
+  "description": "POC - SaaS Gest\u00e3o Escolar (Node.js + Express + SQLite + HTML/CSS/JS)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --host=0.0.0.0",
+    "build": "echo 'No build step required'",
+    "vercel-build": "echo 'Preparing for Vercel deployment'",
+    "check-deploy": "node check-deploy.js",
+    "setup-firewall": "powershell -ExecutionPolicy Bypass -File setup-network.ps1",
+    "help": "echo \"Comandos disponíveis:\" && echo \"npm run dev - Inicia servidor com acesso externo\" && echo \"npm run setup-firewall - Configura firewall para acesso externo\" && echo \"npm start - Inicia servidor apenas local\" && echo \"npm run check-deploy - Verifica configuração para deploy\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
+  }
+}
